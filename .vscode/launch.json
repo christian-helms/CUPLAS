@@ -1,0 +1,46 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Quickbench",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "bench/bench.py",
+            "console": "integratedTerminal",
+            "args": ["+mode=quick"],
+        },
+
+        {
+            "name": "Bigbench",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "bench/bench.py",
+            "console": "integratedTerminal",
+            "args": ["+mode=big"],
+        },
+
+        {
+            "name": "Debug test_plas",
+            "type": "cuda-gdb",
+            "request": "launch",
+            "program": "${workspaceFolder}/test/bin/debug/test_plas"
+        },
+
+        {
+            "name": "Debug test_permuters",
+            "type": "cuda-gdb",
+            "request": "launch",
+            "program": "${workspaceFolder}/test/bin/debug/test_permuters"
+        },
+
+        {
+            "name": "Debug test_fast_gaussian_filter",
+            "type": "cuda-gdb",
+            "request": "launch",
+            "program": "${workspaceFolder}/test/bin/debug/test_fast_gaussian_filter"
+        },
+    ]
+}

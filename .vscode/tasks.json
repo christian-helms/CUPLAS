@@ -1,0 +1,25 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build PLAS Test",
+			"type": "shell",
+			"command": "cd test && make SMS=89 dbg=1",
+			"problemMatcher": ["$nvcc"],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"label": "Build PLAS Test Perf",
+			"type": "shell",
+			"command": "cd test && make SMS=89",
+			"problemMatcher": ["$nvcc"],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		}
+	]
+}

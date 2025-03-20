@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/plas/include",
+                "${workspaceFolder}/test/CUDA_debug_util",
+                "/usr/include/opencv4",
+                "/usr/local/cuda/include",
+                "${workspaceFolder}/.venv/lib/python3.12/site-packages/torch/include",
+                "${workspaceFolder}/.venv/lib/python3.12/site-packages/torch/include/torch/csrc/api/include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerArgs": [
+                "-I${workspaceFolder}/plas/include",
+                "-I${workspaceFolder}/CUDA_debug_util"
+            ]
+        }
+    ],
+    "version": 4
+} 

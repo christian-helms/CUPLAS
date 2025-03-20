@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "torch"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plas"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.9,<=3.13"
+dependencies = [
+    "kornia>=0.8.0",
+    "omegaconf>=2.3.0",
+    "opencv-python>=4.11.0.86",
+    "pillow>=11.1.0",
+    "pip>=25.0",
+    "plotly>=6.0.0",
+    "pytest>=8.3.4",
+    "torch==2.6",
+    "tqdm>=4.67.1",
+]
+
+[[tool.uv.index]]
+url = "file:///home/helms/Dev/PLAS-Gitlab/pypi.nvidia.com"
+
+[[tool.uv.index]]
+url = "file:///home/helms/Dev/PLAS-Gitlab/pypy.nvidia.com"
