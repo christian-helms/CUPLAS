@@ -10,8 +10,46 @@
 #include <utility>
 #include <vector>
 #include <string>
+#include <cstdio>
+#include <sys/stat.h>
 #include "filters.cuh"
 #include "plas.cuh"
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
+// Set to a folder path to save intermediate frames, or nullptr to disable
+// const char* SAVE_FRAMES_FOLDER = nullptr;
+const char* SAVE_FRAMES_FOLDER = "/tmp/cuplas_frames";
+
+void save_grid_as_image(const float* grid_device, int H, int W, int C, int frame_idx, const char* folder) {
+    if (folder == nullptr) return;
+    
+    // Create folder if it doesn't exist
+    mkdir(folder, 0755);
+    
+    // Copy grid from device to host
+    float* grid_host = new float[H * W * C];
+    cudaMemcpy(grid_host, grid_device, H * W * C * sizeof(float), cudaMemcpyDeviceToHost);
+    
+    // Convert to uint8 RGB (assuming C >= 3, use first 3 channels)
+    unsigned char* img = new unsigned char[H * W * 3];
+    for (int i = 0; i < H * W; i++) {
+        for (int c = 0; c < 3; c++) {
+            float val = (C >= 3) ? grid_host[i * C + c] : grid_host[i * C];
+            val = std::max(0.0f, std::min(255.0f, val));
+            img[i * 3 + c] = static_cast<unsigned char>(val);
+        }
+    }
+    
+    // Save as PNG
+    char filename[256];
+    snprintf(filename, sizeof(filename), "%s/frame_%04d.png", folder, frame_idx);
+    stbi_write_png(filename, W, H, 3, img, W * 3);
+    
+    delete[] grid_host;
+    delete[] img;
+}
 
 int max_shared_mem_per_block;
 
@@ -409,16 +447,12 @@ void sort_with_plas(const float* grid_input, // of size H x W x C, memory layout
     float* grid_output, // same size as grid_input
     int* index_output, // same layout as grid_input but without channels,
     float* grid_target,
-    int H, int W, int C, int64_t seed, RandomPermuter* permuter, int filter_algo,
+    int H, int W, int C, int64_t seed, RandomPermuter* permuter,
     int min_block_side, int min_filter_side_length, float filter_decrease_factor,
     float improvement_break, int min_group_configs,
     int max_group_configs, bool verbose) {
     Filter* filter;
-    if (filter_algo == 0) {
-        filter = new FastGaussianFilter(W, H, C);
-    } else {
-        filter = new GaussianFilterViaCVCUDA(W, H, C);
-    }
+    filter = new FastGaussianFilter(W, H, C);
 
     permuter->set_seed(seed);
     query_maximum_shared_memory_per_block();
@@ -460,6 +494,11 @@ void sort_with_plas(const float* grid_input, // of size H x W x C, memory layout
 
     std::vector<int> filter_side_lengths = get_filter_side_lengths(
         min(H, W), min_filter_side_length, filter_decrease_factor);
+    int frame_idx = 0;
+    
+    // Save initial frame
+    save_grid_as_image(grid_output, H, W, C, frame_idx++, SAVE_FRAMES_FOLDER);
+    
     for (int filter_side_length : filter_side_lengths) {
         // Blur the grid to obtain an idealized target 
         int filter_size = filter_side_length;
@@ -537,6 +576,8 @@ void sort_with_plas(const float* grid_input, // of size H x W x C, memory layout
             blockified_target_grid[turn], index_output, blockified_index[turn], H,
             W, C, block_len_x, block_len_y, tx, ty);
 
+        // Save frame after each filter size iteration
+        save_grid_as_image(grid_output, H, W, C, frame_idx++, SAVE_FRAMES_FOLDER);
     }
 
     // Free all intermediate tensors.
@@ -553,12 +594,12 @@ void sort_with_plas(const float* grid_input, // of size H x W x C, memory layout
 
 std::pair<float*, int*> sort_with_plas(
     const float* grid_input,
-    int H, int W, int C, int64_t seed, float* grid_target, RandomPermuter* permuter, int filter_algo, int min_block_side, int min_filter_side_length,
+    int H, int W, int C, int64_t seed, float* grid_target, RandomPermuter* permuter, int min_block_side, int min_filter_side_length,
     float filter_decrease_factor, float improvement_break,
     int min_group_configs, int max_group_configs,
     bool verbose) {
     float* grid_output = get_3d_tensor_device_memory<float>(H, W, C);
     int* index_output = get_2d_tensor_device_memory<int>(H, W);
-    sort_with_plas(grid_input, grid_output, index_output, grid_target, H, W, C, seed, permuter, filter_algo, min_block_side, min_filter_side_length, filter_decrease_factor, improvement_break, min_group_configs, max_group_configs, verbose);
+    sort_with_plas(grid_input, grid_output, index_output, grid_target, H, W, C, seed, permuter, min_block_side, min_filter_side_length, filter_decrease_factor, improvement_break, min_group_configs, max_group_configs, verbose);
     return std::make_pair(grid_output, index_output);
 }

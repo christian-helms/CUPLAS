@@ -1,27 +1,41 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel", "torch"]
+requires = ["setuptools>=61.0", "wheel", "torch>=2.9", "ninja>=1.11"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "plas"
+name = "CUPLAS"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.9,<=3.13"
+requires-python = ">=3.10,<=3.13"
 dependencies = [
     "kornia>=0.8.0",
     "omegaconf>=2.3.0",
     "opencv-python>=4.11.0.86",
     "pillow>=11.1.0",
+    "ninja>=1.11",
     "pip>=25.0",
     "plotly>=6.0.0",
     "pytest>=8.3.4",
-    "torch==2.6",
+    "torch>=2.9",
     "tqdm>=4.67.1",
+    "torchvision>=0.24.1",
 ]
 
-[[tool.uv.index]]
-url = "file:///home/helms/Dev/PLAS-Gitlab/pypi.nvidia.com"
-
-[[tool.uv.index]]
-url = "file:///home/helms/Dev/PLAS-Gitlab/pypy.nvidia.com"
+[project.optional-dependencies]
+benchmark = [
+    "kaleido>=1.2.0",
+    "numpy",
+    "kornia",
+    "pandas",
+    "scipy",
+    "pillow",
+    "plyfile",
+    "trimesh",
+    "opencv-python",
+    "imagecodecs",
+    "tqdm",
+    "easydict",
+    "ipykernel",
+    "matplotlib",
+]

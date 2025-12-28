@@ -26,8 +26,27 @@ WRITE_IMG_TMP = False
 WRITE_FOLDER = "/tmp/plas-dbg"
 WRITE_IDX = defaultdict(int)
 
+# Set to a folder path to save intermediate frames, or None to disable
+# SAVE_FRAMES_FOLDER = None
+SAVE_FRAMES_FOLDER = "/tmp/legacy_plas_frames"
+
 if SHOW_VIS or WRITE_IMG_TMP:
     import cv2
+
+def save_frame(params, frame_idx, folder):
+    """Save the current grid state as a PNG image."""
+    if folder is None:
+        return
+    os.makedirs(folder, exist_ok=True)
+    # params is (C, H, W), convert to (H, W, C) uint8
+    img = params.permute(1, 2, 0).clamp(0, 255).to(torch.uint8).cpu().numpy()
+    # Handle different channel counts
+    if img.shape[-1] == 1:
+        img = np.repeat(img, 3, axis=-1)
+    elif img.shape[-1] > 3:
+        img = img[..., :3]
+    from PIL import Image
+    Image.fromarray(img).save(os.path.join(folder, f"frame_{frame_idx:04d}.png"))
 
 
 # TODO perf: distance calculation done for the whole array after sorting for early breaking
@@ -525,6 +544,7 @@ def sort_with_plas(
         pbar = None
 
     total_num_reorders = 0
+    frame_idx = 0
 
     with torch.inference_mode():
 
@@ -533,6 +553,10 @@ def sort_with_plas(
             .reshape(grid_shape)
             .unsqueeze(0)
         )
+
+        # Save initial frame
+        save_frame(params, frame_idx, SAVE_FRAMES_FOLDER)
+        frame_idx += 1
 
         for radius in radii:
             # compute filtersize that is smaller than any side of the grid
@@ -552,6 +576,10 @@ def sort_with_plas(
             )
 
             total_num_reorders += num_reorders
+
+            # Save frame after each radius iteration
+            save_frame(params, frame_idx, SAVE_FRAMES_FOLDER)
+            frame_idx += 1
 
             if pbar:
                 pbar.update(1)

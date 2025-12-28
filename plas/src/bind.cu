@@ -45,7 +45,7 @@ namespace plas {
 
     void sort_with_plas_torch_cuda_wrapper(
         const at::Tensor& grid, at::Tensor& grid_output, at::Tensor& index_output, at::Tensor& grid_target, const int64_t seed, const std::string& permuter_type,
-        const int64_t filter_algo, const int64_t min_block_side, const int64_t min_filter_side_length,
+        const int64_t min_block_side, const int64_t min_filter_side_length,
         const double filter_decrease_factor, const double improvement_break,
         const int64_t min_group_configs, const int64_t max_group_configs,
         const bool verbose) {
@@ -55,47 +55,42 @@ namespace plas {
         } else {
             grid_target_ptr = grid_target.data_ptr<float>();
         }
-        RandomPermuter permuter;
-        if (permuter_type == "lcg") {
-            permuter = new LCGPermuter();
-        } else {
-            permuter = new PhiloxPermuter();
-        }
+        RandomPermuter *permuter = new LCGPermuter();
 
         sort_with_plas(
             grid.data_ptr<float>(), grid_output.data_ptr<float>(), index_output.data_ptr<int>(), grid_target_ptr, grid.size(0), grid.size(1), grid.size(2), seed,
-            permuter, filter_algo, min_block_side, min_filter_side_length, filter_decrease_factor,
+            permuter, min_block_side, min_filter_side_length, filter_decrease_factor,
             improvement_break, min_group_configs, max_group_configs, verbose);
     }
 
-    PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {}
-
-    TORCH_LIBRARY(plas, m) {
-        m.def("random_philox_permutation(int n, int num_rounds, Tensor dummy) -> "
-            "Tensor");
-        m.def("sort_with_plas(Tensor grid, \
-                              Tensor grid_output, \
-                              Tensor index_output, \
-                              Tensor grid_target, \
-                              int seed, \
-                              str permuter_type, \
-                              int filter_algo, \
-                              int min_block_side, \
-                              int min_filter_side_length, \
-                              float filter_decrease_factor, \
-                              float improvement_break, \
-                              int min_group_configs, \
-                              int max_group_configs, \
-                              bool verbose) -> ()");
-    }
-
-    TORCH_LIBRARY_IMPL(plas, CPU, m) {
-        m.impl("random_philox_permutation", &random_philox_permutation_cpu);
-    }
-
-    TORCH_LIBRARY_IMPL(plas, CUDA, m) {
-        m.impl("random_philox_permutation",
-            &random_philox_permutation_torch_cuda_wrapper);
-        m.impl("sort_with_plas", &sort_with_plas_torch_cuda_wrapper);
+    PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+        m.def("random_philox_permutation_cpu",
+              &random_philox_permutation_cpu,
+              "Random Philox permutation (CPU)",
+              pybind11::arg("n"),
+              pybind11::arg("num_rounds"),
+              pybind11::arg("dummy"));
+        m.def("random_philox_permutation_cuda",
+              &random_philox_permutation_torch_cuda_wrapper,
+              "Random Philox permutation (CUDA)",
+              pybind11::arg("n"),
+              pybind11::arg("num_rounds"),
+              pybind11::arg("dummy"));
+        m.def("sort_with_plas",
+              &sort_with_plas_torch_cuda_wrapper,
+              "Sort grid with PLAS (CUDA)",
+              pybind11::arg("grid"),
+              pybind11::arg("grid_output"),
+              pybind11::arg("index_output"),
+              pybind11::arg("grid_target"),
+              pybind11::arg("seed"),
+              pybind11::arg("permuter_type"),
+              pybind11::arg("min_block_side"),
+              pybind11::arg("min_filter_side_length"),
+              pybind11::arg("filter_decrease_factor"),
+              pybind11::arg("improvement_break"),
+              pybind11::arg("min_group_configs"),
+              pybind11::arg("max_group_configs"),
+              pybind11::arg("verbose"));
     }
 } // namespace plas

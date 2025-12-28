@@ -76,13 +76,13 @@ class LCGPermuter : public RandomPermuter {
 
 public:
 
-  void reset_fusing_parameters() {
+  void reset_fusing_parameters() override {
     fused_gen = 1;
     fused_offset = 0;
     last_n = -1;
   }
 
-  int *get_new_permutation(int n) {
+  int *get_new_permutation(int n) override {
     auto [gen, offset] = get_random_lcg_generator_and_offset(n);
     // maintain the parameters of the composition of all generated permutations
     // unto a call to get_inverse_permutation 
@@ -108,7 +108,7 @@ public:
     }
     return current_permutation;
   }
-  int *get_inverse_permutation(int n) {
+  int *get_inverse_permutation(int n) override {
     auto [inv_gen, inv_offset] = get_inverse_parameters(fused_gen, fused_offset, n);
     lcg_permutation_cuda(n, inv_gen, inv_offset,
                          current_permutation);
@@ -119,7 +119,7 @@ public:
     fused_offset = 0;
     return current_permutation;
   }
-  bool supports_inverse_fusion() { return true; }
+  bool supports_inverse_fusion() override { return true; }
 };
 
 // --------- Philox Permuter --------- //
@@ -137,16 +137,19 @@ class PhiloxPermuter : public RandomPermuter {
 public:
   PhiloxPermuter(int num_rounds = 5) : num_rounds(num_rounds) {
   }
-  int *get_new_permutation(int n) {
+  int *get_new_permutation(int n) override {
     keys = get_random_philox_keys(num_rounds);
     cudaFree(current_permutation);
+    current_permutation = nullptr;
     current_permutation = philox_permutation_cuda(n, num_rounds, keys);
     return current_permutation;
   };
-  int *get_inverse_permutation(int n) {
+  int *get_inverse_permutation(int n) override {
     cudaFree(current_permutation);
+    current_permutation = nullptr;
     current_permutation = philox_inverse_permutation_cuda(n, num_rounds, keys);
     return current_permutation;
   }
-  bool supports_inverse_fusion() { return false; }
+  bool supports_inverse_fusion() override { return false; }
+  void reset_fusing_parameters() override { keys.clear(); }
 };

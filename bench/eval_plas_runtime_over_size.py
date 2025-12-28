@@ -2,9 +2,8 @@ import torch
 import numpy as np
 import time
 import json
-import cv2
 
-from plas import sort_with_plas as plas_plus_plus
+from plas import sort_with_plas as cuplas
 from plas.legacy_plas import sort_with_plas as legacy_plas
 from bench_helpers import avg_L2_dist_between_neighbors
 
@@ -19,12 +18,12 @@ def bench_plas_scaling(sorting_method: str):
     quality_scores = []
 
     sorting_function = (
-        plas_plus_plus
-        if sorting_method == "plas++"
+        cuplas
+        if sorting_method == "cuplas"
         else legacy_plas
     )
 
-    for p in range(4, 11):
+    for p in range(4, 12):
         H = 2**p
         W = 2**p
         C = 3
@@ -34,7 +33,7 @@ def bench_plas_scaling(sorting_method: str):
         if sorting_method == "legacy_plas":
             grid = grid.permute(2, 0, 1)
         start = time.time()
-        sorted_grid, sorted_indices = sorting_function(grid, permuter_type="philox")
+        sorted_grid, sorted_indices = sorting_function(grid)
         end = time.time()
         if sorting_method == "legacy_plas":
             sorted_grid = sorted_grid.permute(1, 2, 0)
@@ -57,5 +56,5 @@ def bench_plas_scaling(sorting_method: str):
 
 
 if __name__ == "__main__":
-    bench_plas_scaling("plas++")
+    bench_plas_scaling("cuplas")
     bench_plas_scaling("legacy_plas")

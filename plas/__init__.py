@@ -6,9 +6,16 @@ from . import cuplas  # noqa # type: ignore
 
 
 def random_philox_permutation(
-    n: int, num_rounds: int, dummy: Tensor = torch.randn(1, device="cuda")
+    n: int, num_rounds: int, dummy: Tensor | None = None
 ) -> Tensor:
-    return torch.ops.plas.random_philox_permutation.default(n, num_rounds, dummy)  # type: ignore
+    # Choose device without allocating at import time
+    if dummy is None:
+        device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+        dummy = torch.empty(0, device=device)
+    if dummy.is_cuda:
+        return cuplas.random_philox_permutation_cuda(n, num_rounds, dummy)  # type: ignore
+    else:
+        return cuplas.random_philox_permutation_cpu(n, num_rounds, dummy)  # type: ignore
 
 
 def sort_with_plas(
@@ -16,7 +23,6 @@ def sort_with_plas(
     grid_target: Tensor = torch.empty(0),
     seed: int = 1337,
     permuter_type: str = "lcg",
-    filter_algo: int = 0,
     min_block_side: int = 4,
     min_filter_side_length: int = 2,
     filter_decrease_factor: float = 0.9,
@@ -27,14 +33,13 @@ def sort_with_plas(
 ) -> tuple[Tensor, Tensor]:
     grid_output = torch.empty_like(grid)
     index_output = torch.zeros(grid.size(0), grid.size(1), dtype=torch.int32, device=grid.device)
-    torch.ops.plas.sort_with_plas.default( # type: ignore
+    cuplas.sort_with_plas(  # type: ignore
         grid,
         grid_output,
         index_output,
         grid_target.to(grid.device),
         seed,
         permuter_type,
-        filter_algo,
         min_block_side,
         min_filter_side_length,
         filter_decrease_factor,

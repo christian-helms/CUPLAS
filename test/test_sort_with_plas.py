@@ -16,14 +16,14 @@ def is_sorted_according_to_index(grid: torch.Tensor, sorted_grid: torch.Tensor, 
 
 def test_sort_with_plas():
     grid = torch.randn(1024, 1024, 3, device="cuda")
-    sorted_grid, sorted_index = plas.sort_with_plas(grid, filter_algo=0)
+    sorted_grid, sorted_index = plas.sort_with_plas(grid)
     assert is_permutation(sorted_index.flatten())
     assert is_sorted_according_to_index(grid, sorted_grid, sorted_index)
 
 
 if __name__ == "__main__":
     grid = torch.randn(2048, 2048, 3, device="cuda")
-    sorted_grid, sorted_index = plas.sort_with_plas(grid, filter_algo=0)
+    sorted_grid, sorted_index = plas.sort_with_plas(grid)
     cv2.imshow("grid", grid.cpu().numpy())
     cv2.imshow("sorted_grid", sorted_grid.cpu().numpy())
     cv2.waitKey(0)

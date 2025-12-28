@@ -43,7 +43,7 @@ void swap_within_group(float* blockified_grid, float* blockified_target_grid,
 // API for the python wrapper
 void sort_with_plas(
     const float* grid_input, float* grid_output, int* index_output, float* grid_target, int H, int W, int C, 
-    int64_t seed, RandomPermuter* permuter, int filter_algo, int min_block_side, int min_filter_side_length,
+    int64_t seed, RandomPermuter* permuter, int min_block_side, int min_filter_side_length,
     float filter_decrease_factor, float improvement_break,
     int min_group_configs, int max_group_configs,
     bool verbose);
@@ -51,7 +51,7 @@ void sort_with_plas(
 // C++ API
 std::pair<float*, int*> sort_with_plas(
     const float* grid_input,
-    int H, int W, int C, int64_t seed = 1337, float* grid_target = nullptr, RandomPermuter* permuter = new LCGPermuter(), int filter_algo = 0, int min_block_side = 4, int min_filter_side_length = 3,
+    int H, int W, int C, int64_t seed = 1337, float* grid_target = nullptr, RandomPermuter* permuter = new LCGPermuter(), int min_block_side = 4, int min_filter_side_length = 3,
     float filter_decrease_factor = 0.9, float improvement_break = 1e-5,
     int min_group_configs = 1, int max_group_configs = 10,
     bool verbose = false);
