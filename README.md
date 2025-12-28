@@ -1,6 +1,9 @@
-# CUDA Parallel Linear Assignment Sorting (CUPLAS)
+<h1 align="center">CUDA Parallel Linear Assignment Sorting (CUPLAS)</h1>
 
-[![Project Page](https://img.shields.io/badge/🌐_Project_Page-chrishelms.me-blue)](https://chrishelms.me/projects/cuplas) [![Paper of Reference Method (PLAS)](https://img.shields.io/badge/📄_arXiv-PLAS_Paper-b31b1b)](https://arxiv.org/html/2312.13299v2)
+<p align="center">
+  <a href="https://chrishelms.me/projects/cuplas"><img src="https://img.shields.io/badge/🌐_Project_Page-chrishelms.me-blue" alt="Project Page"></a>
+  <a href="https://arxiv.org/html/2312.13299v2"><img src="https://img.shields.io/badge/📄_arXiv-PLAS_Paper-b31b1b" alt="Paper of Reference Method (PLAS)"></a>
+</p>
 
 This is a CUDA redesign of the Parallel Linear Assignment Sorting ([PLAS](https://github.com/fraunhoferhhi/PLAS)) algorithm, originally brought onto the GPU via pytorch.
 It constitutes for large grids a speedup of over 100x compared to the original implementation while incurring an acceptable sorting quality decrease.
